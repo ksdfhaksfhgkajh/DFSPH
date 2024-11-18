@@ -51,7 +51,8 @@ std::vector<int> NeighborSearch::find_neighbours(const std::vector<Particle>& pa
 		{
 			for (auto neighbor_i : _grid.at(hash_index))
 			{
-				if (particles[neighbor_i].cal_distance(particles[self_index]) <= _grid_size)
+				if (particles[neighbor_i].cal_distance(particles[self_index]) <= _grid_size 
+					&& particles[neighbor_i].cal_distance(particles[self_index]) != 0)
 				{
 					neighbors_index.push_back(neighbor_i);
 				}

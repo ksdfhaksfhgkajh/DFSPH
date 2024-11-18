@@ -7,9 +7,11 @@
 class Particle
 {
 public:
-	std::vector<double> position{};
-	std::vector<double> velocity{};
-	std::vector<double> acceleration{};
+	using Vector3D = std::vector<double>;
+
+	Vector3D position{};
+	Vector3D velocity{};
+	Vector3D acceleration{};
 	double density{};
 	double factor{};
 
@@ -17,5 +19,17 @@ public:
 };
 
 enum Axle :size_t { X, Y, Z };
+
+Particle::Vector3D operator-(const Particle::Vector3D& self, const Particle::Vector3D& other);
+
+Particle::Vector3D operator-(double self, const Particle::Vector3D& other);
+
+Particle::Vector3D operator/(const Particle::Vector3D& other, double self);
+
+Particle::Vector3D operator*(double self, const Particle::Vector3D& other);
+
+double operator*(const Particle::Vector3D& self, const Particle::Vector3D& other);
+
+void operator+=(Particle::Vector3D& self, const Particle::Vector3D& other);
 
 #endif
