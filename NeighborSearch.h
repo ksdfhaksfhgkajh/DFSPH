@@ -11,7 +11,7 @@ public:
 	std::vector<int> find_neighbours(const std::vector<Particle>& particles, int self_index) const;
 
 private:
-	double _grid_size;
+	const double _grid_size;
 	static constexpr int _hash_prime[3] = { 1, 73856093, 19349663 };
 	std::unordered_map<int, std::vector<int>> _grid;
 

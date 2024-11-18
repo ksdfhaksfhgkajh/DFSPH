@@ -7,17 +7,14 @@
 class Particle
 {
 public:
-	std::vector<double> position;
-	std::vector<double> velocity;
-	std::vector<double> acceleration;
+	std::vector<double> position{};
+	std::vector<double> velocity{};
+	std::vector<double> acceleration{};
 	double density{};
 	double factor{};
 
-	Particle(std::vector<double> position, std::vector<double> velocity);
 	double cal_distance(const Particle& other) const;
 };
-
-
 
 enum Axle :size_t { X, Y, Z };
 

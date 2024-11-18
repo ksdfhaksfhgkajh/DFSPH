@@ -1,8 +1,5 @@
 #include "Particle.h"
 
-Particle::Particle(std::vector<double> pos, std::vector<double> vel)
-	: position(pos), velocity(vel) {}
-
 double Particle::cal_distance(const Particle& other) const
 {
 	double distance = 0;

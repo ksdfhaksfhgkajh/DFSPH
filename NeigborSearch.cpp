@@ -19,7 +19,7 @@ NeighborSearch::NeighborSearch(const std::vector<Particle>& particles, double gr
 	}
 }
 
-void NeighborSearch::_get_hash_search_range(int (& search_space)[27], int self_hash_index) const
+void NeighborSearch::_get_hash_search_range(int(&search_space)[27], int self_hash_index) const
 {
 	int index = 0;
 	for (int dx = -1; dx <= 1; ++dx)
@@ -28,7 +28,7 @@ void NeighborSearch::_get_hash_search_range(int (& search_space)[27], int self_h
 		{
 			for (int dz = -1; dz <= 1; ++dz)
 			{
-				search_space[index] = self_hash_index + 
+				search_space[index] = self_hash_index +
 					dx * _hash_prime[0] +
 					dy * _hash_prime[1] +
 					dz * _hash_prime[2];
@@ -36,7 +36,7 @@ void NeighborSearch::_get_hash_search_range(int (& search_space)[27], int self_h
 			}
 		}
 	}
-		
+
 }
 
 std::vector<int> NeighborSearch::find_neighbours(const std::vector<Particle>& particles, int self_index) const
