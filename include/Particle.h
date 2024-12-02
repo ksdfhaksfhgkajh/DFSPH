@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cmath>
+#include <stdexcept>
 
 class Particle
 {

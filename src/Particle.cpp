@@ -1,4 +1,4 @@
-#include "../include/Particle.h"
+#include "Particle.h"
 
 Particle::Vector3D operator-(const Particle::Vector3D& self, const Particle::Vector3D& other)
 {
@@ -13,7 +13,7 @@ Particle::Vector3D operator-(const Particle::Vector3D& self, const Particle::Vec
 	}
 	else
 	{
-		throw "vector size mismatch";
+		throw std::runtime_error("vector size mismatch");
 	}
 	return result;
 }
@@ -31,7 +31,7 @@ Particle::Vector3D operator-(double self, const Particle::Vector3D& other)
 	}
 	else
 	{
-		throw "vector size mismatch";
+		throw std::runtime_error("vector size mismatch");
 	}
 	return result;
 }
@@ -56,7 +56,7 @@ Particle::Vector3D operator/(const Particle::Vector3D& other, double self)
 	}
 	else
 	{
-		throw "vector size mismatch";
+		throw std::runtime_error("vector size mismatch");
 	}
 	return result;
 }
@@ -74,7 +74,7 @@ Particle::Vector3D operator*(double self, const Particle::Vector3D& other)
 	}
 	else
 	{
-		throw "vector size mismatch";
+		throw std::runtime_error("vector size mismatch");
 	}
 	return result;
 }
@@ -92,7 +92,7 @@ double operator*(const Particle::Vector3D& self, const Particle::Vector3D& other
 	}
 	else
 	{
-		throw "vector size mismatch";
+		throw std::runtime_error("vector size mismatch");
 	}
 	return result;
 }
@@ -108,7 +108,7 @@ void operator+=(Particle::Vector3D& self, const Particle::Vector3D& other)
 	}
 	else
 	{
-		throw "vector size mismatch";
+		throw std::runtime_error("vector size mismatch");
 	}
 }
 
@@ -124,7 +124,7 @@ double Particle::cal_distance(const Particle& other) const
 	}
 	else
 	{
-		throw "vector size mismatch";
+		throw std::runtime_error("vector size mismatch");
 	}
 	return sqrt(distance);
 }

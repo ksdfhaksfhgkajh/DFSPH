@@ -1,8 +1,10 @@
-# 忽略所有内容
+
 *
 
 !.gitignore
 !CMakeLists.txt
+!README.md
+!sphere.ply
 
 !include/
 !include/**
