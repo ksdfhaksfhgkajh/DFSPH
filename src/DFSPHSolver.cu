@@ -20,12 +20,13 @@ DFSPHSolver::DFSPHSolver(int particle_num, int  region_length)
     }
 }
 
-DFSPHSolver::DFSPHSolver(const char* file_path)
+DFSPHSolver::DFSPHSolver(const char* input_path, const char* output_path)
+    :_output_path(output_path)
 {
-    std::ifstream infile(file_path);
+    std::ifstream infile(input_path);
     if (!infile.is_open()) 
     {
-        throw std::runtime_error("Failed to open file: " + std::string(file_path));
+        throw std::runtime_error("Failed to open file: " + std::string(input_path));
     }
 
     std::string line;
@@ -73,10 +74,13 @@ DFSPHSolver::DFSPHSolver(const char* file_path)
     }
 
     infile.close();
-    std::cout << "Loaded " << _particles.size() << " particles from " << file_path << ".\n";
+    std::cout << "Loaded " << _particles.size() << " particles from " << input_path << ".\n";
 
     _neighbor_grid = std::make_unique<NeighborSearch>(_particles, _radius);
 }
+
+DFSPHSolver::DFSPHSolver(const char* file_path)
+    :DFSPHSolver(file_path, "../") {}
 
 void DFSPHSolver::no_pressure_predict()
 {
@@ -235,7 +239,7 @@ void DFSPHSolver::simulate()
         copy_data_to_host();
 
         std::ostringstream filename;
-        filename << _output_path << "frame_" << i + 1 << ".ply";
+        filename << _output_path << "/frame_" << i + 1 << ".ply";
         export_to_ply(filename.str());
     }
 

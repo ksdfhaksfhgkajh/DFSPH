@@ -16,6 +16,7 @@ class DFSPHSolver
 public:
 	DFSPHSolver(int particle_num, int  region_length);
 	explicit DFSPHSolver(const char* file_path);
+    DFSPHSolver(const char* input_path, const char* output_path);
 
 	void compute_density();
 	void no_pressure_predict();
@@ -40,7 +41,7 @@ private:
 	const double _density0{ 1.0 };
 	const double _stiffness{ 0.01 };
 	const Vector3D _gravity{0.0, -9.8, 0.0};
-	const char* _output_path = "../result/";
+	const char* _output_path = "..";
     int _max_neighbors{0};
 
     std::unique_ptr<NeighborSearch> _neighbor_grid;
