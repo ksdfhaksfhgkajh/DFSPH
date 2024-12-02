@@ -1,10 +1,9 @@
 # 忽略所有内容
 *
 
-# 但不忽略 .gitignore 本身
 !.gitignore
+!CMakeLists.txt
 
-# 保留 include 和 src 文件夹及其所有内容
 !include/
 !include/**
 !src/
