@@ -1,4 +1,4 @@
-#include "DFSPHSolver.h"
+#include "DFSPHSolver.cuh"
 
 int main()
 {

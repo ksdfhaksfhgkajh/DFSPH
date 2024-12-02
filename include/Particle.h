@@ -1,15 +1,14 @@
-#ifndef PARTICLE_H
-#define PARTICLE_H
+#ifndef PARTICLE_CUH
+#define PARTICLE_CUH
 
 #include <vector>
 #include <cmath>
 #include <stdexcept>
+#include "Vector3D.cuh"
 
 class Particle
 {
 public:
-	using Vector3D = std::vector<double>;
-
 	Vector3D position{};
 	Vector3D velocity{};
 	Vector3D acceleration{};
@@ -20,17 +19,5 @@ public:
 };
 
 enum Axle :size_t { X, Y, Z };
-
-Particle::Vector3D operator-(const Particle::Vector3D& self, const Particle::Vector3D& other);
-
-Particle::Vector3D operator-(double self, const Particle::Vector3D& other);
-
-Particle::Vector3D operator/(const Particle::Vector3D& other, double self);
-
-Particle::Vector3D operator*(double self, const Particle::Vector3D& other);
-
-double operator*(const Particle::Vector3D& self, const Particle::Vector3D& other);
-
-void operator+=(Particle::Vector3D& self, const Particle::Vector3D& other);
 
 #endif

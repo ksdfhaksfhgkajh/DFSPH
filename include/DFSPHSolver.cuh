@@ -1,7 +1,8 @@
-#ifndef DFSPHSOLVER_H
-#define DFSPHSOLVER_H
+#ifndef DFSPHSOLVER_CUH
+#define DFSPHSOLVER_CUH
 
 #include "Particle.h"
+#include "Vector3D.cuh"
 #include "NeighborSearch.h"
 #include "DFSPH_cuda_api.cuh"
 #include <fstream>
@@ -9,7 +10,6 @@
 #include <iostream>
 #include <memory>
 #include <random>
-#include "DFSPH_cuda_api.cuh"
 
 class DFSPHSolver
 {
@@ -19,8 +19,8 @@ public:
 
 	void compute_density();
 	void no_pressure_predict();
-	void solve_divergence_free();
-	void solve_density_constant();
+//	void solve_divergence_free();
+//	void solve_density_constant();
 	void simulate();
 	void apply_boundary_conditions();
 
@@ -39,18 +39,11 @@ private:
 	const double _viscosity{ 0.1 };
 	const double _density0{ 1.0 };
 	const double _stiffness{ 0.01 };
-	const Particle::Vector3D _gravity{ 0.0, -9.8, 0.0 };
+	const Vector3D _gravity{0.0, -9.8, 0.0};
 	const char* _output_path = "../result/";
+    int _max_neighbors{0};
 
-	NeighborSearch* _neighbor_grid{};
-
-	double _poly6(double distance) const;
-	Particle::Vector3D _spiky_first_derivative(const Particle::Vector3D& distance) const;
-	double _viscosity_laplacian(double distance) const;
-
-	void _calcu_a_gra(size_t index);
-	void _calcu_a_vis(size_t index, const std::vector<int>& neighbors_index_list);
-	void _calcu_a_pre(size_t index, const std::vector<int>& neighbors_index_list);
+    std::unique_ptr<NeighborSearch> _neighbor_grid;
 
 public:
     void allocate_device_memory();

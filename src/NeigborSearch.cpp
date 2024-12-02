@@ -1,10 +1,10 @@
 #include "NeighborSearch.h"
 
-int NeighborSearch::_compute_index(const Particle::Vector3D& position) const
+int NeighborSearch::_compute_index(const Vector3D& position) const
 {
-    int hash_index = static_cast<int>(position[X] / _grid_size) * _hash_prime[0] +
-                     static_cast<int>(position[Y]  / _grid_size) * _hash_prime[1] +
-                     static_cast<int>(position[Z]  / _grid_size) * _hash_prime[2];
+    int hash_index = static_cast<int>(position.x / _grid_size) * _hash_prime[0] +
+                     static_cast<int>(position.y  / _grid_size) * _hash_prime[1] +
+                     static_cast<int>(position.z  / _grid_size) * _hash_prime[2];
     return hash_index;
 }
 
