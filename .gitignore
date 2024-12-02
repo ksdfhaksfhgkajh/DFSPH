@@ -4,11 +4,8 @@
 # 但不忽略 .gitignore 本身
 !.gitignore
 
-# 保留 include 和 src 文件夹
+# 保留 include 和 src 文件夹及其所有内容
 !include/
+!include/**
 !src/
-
-# 确保保留 include 和 src 文件夹及其所有内容
-!include/*
-!src/*
-
+!src/**

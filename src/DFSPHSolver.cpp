@@ -1,4 +1,4 @@
-#include "DFSPHSolver.h"
+#include "../include/DFSPHSolver.h"
 
 DFSPHSolver::DFSPHSolver(int particle_num, int  region_length)
 {
@@ -56,8 +56,10 @@ DFSPHSolver::DFSPHSolver(const char* file_path)
     }
 
     // 读取粒子数据
-    for (int i = 0; i < vertex_count; ++i) {
-        if (!std::getline(infile, line)) {
+    for (int i = 0; i < vertex_count; ++i) 
+    {
+        if (!std::getline(infile, line)) 
+        {
             throw std::runtime_error("Unexpected end of file when reading vertex data.");
         }
 
@@ -237,9 +239,9 @@ void DFSPHSolver::export_to_ply(const std::string& filename) const
 void DFSPHSolver::apply_boundary_conditions() const
 {
     // 假设边界范围
-    double x_min = -5.0, x_max = 10.0;
-    double y_min = -5.0, y_max = 10.0;
-    double z_min = -5.0, z_max = 10.0;
+    double x_min = -2.5, x_max = 5.0;
+    double y_min = -2.5, y_max = 5.0;
+    double z_min = -2.5, z_max = 5.0;
     double restitution = 0.5; // 反弹系数 (0: 吸收全部能量，1: 完全反弹)
 
     for (int i = 0; i < _particles.size(); ++i) {

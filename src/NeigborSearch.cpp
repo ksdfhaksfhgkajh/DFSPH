@@ -1,4 +1,4 @@
-#include "NeighborSearch.h"
+#include "../include/NeighborSearch.h"
 
 int NeighborSearch::_compute_index(const std::vector<double>& position) const
 {

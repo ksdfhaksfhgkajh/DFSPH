@@ -2,7 +2,7 @@
 #define NEIGHBORSEARCH_H
 
 #include <unordered_map>
-#include "Particle.h"
+#include "../include/Particle.h"
 
 class NeighborSearch
 {

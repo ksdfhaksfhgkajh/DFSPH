@@ -28,13 +28,13 @@ public:
 
 private:
 	mutable std::vector<Particle> _particles;
-	const double _timestep{ 0.001 };
+	const double _timestep{ 0.05 };
 	const int _framenum{ 100 };
 	const double _radius{ 2 };
 	const double _particle_mass{ 1.0 };
-	const double _viscosity{ 0.01 };
-	const double _density0{ 0.001 };
-	const double _stiffness{ 10.0 };
+	const double _viscosity{ 0.1 };
+	const double _density0{ 1.0 };
+	const double _stiffness{ 0.01 };
 	const Particle::Vector3D _gravity{ 0.0, -9.8, 0.0 };
 
 	std::unique_ptr<NeighborSearch> _neighbor_grid;

@@ -1,4 +1,4 @@
-#include "Particle.h"
+#include "../include/Particle.h"
 
 Particle::Vector3D operator-(const Particle::Vector3D& self, const Particle::Vector3D& other)
 {

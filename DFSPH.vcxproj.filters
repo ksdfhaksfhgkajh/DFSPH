@@ -15,28 +15,31 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Particle.h">
+    <ClCompile Include="src\NeigborSearch.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Particle.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DFSPHSolver.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Particle.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="DFSPHSolver.h">
+    <ClInclude Include="include\NeighborSearch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DFSPHSolver.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Particle.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="DFSPHSolver.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="run.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="NeighborSearch.h">
-      <Filter>头文件</Filter>
-    </ClCompile>
-    <ClCompile Include="NeigborSearch.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
+    <None Include=".gitignore" />
   </ItemGroup>
 </Project>
