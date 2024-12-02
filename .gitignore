@@ -1,0 +1,13 @@
+
+*
+
+!.gitignore
+!CMakeLists.txt
+!README.md
+!sphere.ply
+
+!include/
+!include/**
+!src/
+!src/**
+!result/
