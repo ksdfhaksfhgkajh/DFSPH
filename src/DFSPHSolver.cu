@@ -75,8 +75,6 @@ DFSPHSolver::DFSPHSolver(const char* input_path, const char* output_path)
 
     infile.close();
     std::cout << "Loaded " << _particles.size() << " particles from " << input_path << ".\n";
-
-    _neighbor_grid = std::make_unique<NeighborSearch>(_particles, _radius);
 }
 
 DFSPHSolver::DFSPHSolver(const char* file_path)
@@ -222,9 +220,6 @@ void DFSPHSolver::compute_density()
 
 void DFSPHSolver::simulate()
 {
-    allocate_device_memory();
-    copy_data_to_device();
-
     for (int i = 0; i < _framenum; ++i)
     {
         _neighbor_grid = std::make_unique<NeighborSearch>(_particles, _radius);
