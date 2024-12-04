@@ -2,13 +2,9 @@
 
 __device__ double poly6(double distance, double radius)
 {
-    if (distance >= radius)
+    if (distance >= radius || distance < DFSPHSolver::epsilon)
     {
         return 0.0;
-    }
-    else if (distance < DFSPHSolver::epsilon)
-    {
-        return 1.0 / DFSPHSolver::epsilon;
     }
     else
     {
@@ -20,15 +16,9 @@ __device__ double poly6(double distance, double radius)
 __device__ Vector3D spiky_first_derivative(const Vector3D& diff, double radius)
 {
     double distance = sqrt(diff.dot(diff));
-    if (distance >= radius)
+    if (distance >= radius || distance < DFSPHSolver::epsilon)
     {
         return { 0.0, 0.0, 0.0 };
-    }
-    else if (distance < DFSPHSolver::epsilon)
-    {
-        return {1.0 / DFSPHSolver::epsilon,
-                1.0 / DFSPHSolver::epsilon,
-                1.0 / DFSPHSolver::epsilon};
     }
     else
     {
@@ -40,13 +30,9 @@ __device__ Vector3D spiky_first_derivative(const Vector3D& diff, double radius)
 
 __device__ double viscosity_laplacian(double distance, double radius)
 {
-    if (distance >= radius)
+    if (distance >= radius || distance < DFSPHSolver::epsilon)
     {
         return 0.0;
-    }
-    else if (distance < DFSPHSolver::epsilon)
-    {
-        return 1.0 / DFSPHSolver::epsilon;
     }
     else
     {
@@ -84,6 +70,28 @@ __global__ void compute_density_kernel(Particle* particles,
     {
         p_i.density = DFSPHSolver::epsilon;
     }
+
+    Vector3D grad_p_i(0.0, 0.0, 0.0);
+    double sum_grad_p_j2 = 0.0;
+
+    for (int n = 0; n < neighbor_count; ++n)
+    {
+        int j = neighbor_indices[neighbor_start + n];
+        if (j == -1) continue;
+        Particle &p_j = particles[j];
+        // factor-alpha
+        Vector3D D_Wij = spiky_first_derivative(p_i.position - p_j.position, radius);
+        grad_p_i += D_Wij * particle_mass;
+        sum_grad_p_j2 += pow(particle_mass, 2) * (D_Wij.dot(D_Wij));
+    }
+
+    double aii = grad_p_i.dot(grad_p_i) + sum_grad_p_j2;
+    p_i.factor = 1.0 / (aii + DFSPHSolver::epsilon);
+
+    if (p_i.factor < DFSPHSolver::epsilon)
+    {
+        p_i.factor = DFSPHSolver::epsilon;
+    }
 }
 
 __global__ void no_pressure_predict_kernel(Particle* particles,
@@ -92,9 +100,7 @@ __global__ void no_pressure_predict_kernel(Particle* particles,
                                            int num_particles,
                                            double timestep,
                                            double viscosity,
-                                           double stiffness,
                                            double particle_mass,
-                                           double density0,
                                            Vector3D gravity,
                                            double radius,
                                            int max_neighbors)
@@ -120,40 +126,118 @@ __global__ void no_pressure_predict_kernel(Particle* particles,
         // Viscosity force
         Vector3D v_ij = p_j.velocity - p_i.velocity;
         double W_ij = viscosity_laplacian(distance, radius);
-        if (p_j.density > DFSPHSolver::epsilon && W_ij > DFSPHSolver::epsilon)
+        double avg_density = 0.5 * (p_i.density + p_j.density);
+        if (p_j.density > DFSPHSolver::epsilon)
         {
-            acceleration += (v_ij / p_j.density) * W_ij * viscosity * particle_mass;
+            acceleration += (v_ij / avg_density) * W_ij * viscosity * particle_mass;
         }
-
-        // Pressure
-        double pressure_i = stiffness * (p_i.density - density0);
-        double pressure_j = stiffness * (p_j.density - density0);
-
-        if (p_j.density < DFSPHSolver::epsilon)
-        {
-            continue;
-        }
-
-        Vector3D D_Wij = spiky_first_derivative(p_i.position - p_j.position, radius);
-
-        acceleration += D_Wij * (-particle_mass) * (
-                (pressure_i / (p_i.density * p_i.density)) +
-                (pressure_j / (p_j.density * p_j.density))
-        );
     }
 
     p_i.velocity += acceleration * timestep;
-    p_i.position += p_i.velocity * timestep;
+}
+
+__global__ void compute_kappa_kernel(Particle* particles,
+                                     const int* neighbor_indices,
+                                     const int* neighbor_counts,
+                                     int num_particles,
+                                     double timestep,
+                                     double particle_mass,
+                                     double density0,
+                                     double radius,
+                                     int max_neighbors,
+                                     Kappa_t kappa_t)
+{
+    int idx = static_cast<int>(blockDim.x * blockIdx.x + threadIdx.x);
+    if (idx >= num_particles) return;
+
+    Particle& p_i = particles[idx];
+
+    int neighbor_start = idx * max_neighbors;
+    int neighbor_count = neighbor_counts[idx];
+
+    double Dpho_Dt = 0.0;
+
+    for (int n = 0; n < neighbor_count; ++n)
+    {
+        int j = neighbor_indices[neighbor_start + n];
+        if (j == -1) continue;
+        Particle& p_j = particles[j];
+
+        Vector3D DW_ij = spiky_first_derivative(p_i.position - p_j.position, radius);
+        Dpho_Dt += (p_i.velocity - p_j.velocity).dot(DW_ij) *
+                particle_mass;
+    }
+
+    if (kappa_t == Is_vel)
+    {
+        p_i.kappa = Dpho_Dt * p_i.factor / timestep;
+    }
+    else if (kappa_t == Is_pho)
+    {
+        double pho_star = p_i.density + timestep * Dpho_Dt;
+        p_i.kappa = (pho_star - density0) * p_i.factor / pow(timestep,2);
+    }
+}
+
+__global__ void adapt_velocities_kernel(Particle* particles,
+                                        const int* neighbor_indices,
+                                        const int* neighbor_counts,
+                                        int num_particles,
+                                        double timestep,
+                                        double particle_mass,
+                                        double radius,
+                                        int max_neighbors,
+                                        Kappa_t kappa_t)
+{
+    int idx = static_cast<int>(blockDim.x * blockIdx.x + threadIdx.x);
+    if (idx >= num_particles) return;
+
+    Particle& p_i = particles[idx];
+
+    int neighbor_start = idx * max_neighbors;
+    int neighbor_count = neighbor_counts[idx];
+
+    Vector3D correction(0.0, 0.0, 0.0);
+
+    for (int n = 0; n < neighbor_count; ++n)
+    {
+        int j = neighbor_indices[neighbor_start + n];
+        if (j == -1) continue;
+        Particle& p_j = particles[j];
+
+        correction += spiky_first_derivative(p_i.position - p_j.position, radius)*
+                (p_i.kappa / p_i.density + p_j.kappa / p_j.density);
+    }
+    p_i.velocity = p_i.velocity - correction * (timestep * particle_mass);
+
+    if (kappa_t == Is_pho)
+    {
+        p_i.position += p_i.velocity * timestep;    // update position after fullfill pho_star == pho_0
+    }
+}
+
+__global__ void compute_density_error_kernel(Particle* particles,
+                                             int num_particles,
+                                             double density0,
+                                             double* density_errors)
+{
+    int idx = static_cast<int>(blockDim.x * blockIdx.x + threadIdx.x);
+    if (idx >= num_particles) return;
+
+    Particle& p_i = particles[idx];
+
+    double densityError = p_i.density - density0;
+    density_errors[idx] = fabs(densityError);
 }
 
 __global__ void apply_boundary_conditions_kernel(Particle* particles)
 {
     size_t idx = blockDim.x * blockIdx.x + threadIdx.x;
 
-    double x_min = -2.5, x_max = 5.0;
-    double y_min = -2.5, y_max = 5.0;
-    double z_min = -2.5, z_max = 5.0;
-    double restitution = 0.5;
+    double x_min = -1.25, x_max = 1.25;
+    double y_min = -2.0, y_max = 5.0;
+    double z_min = -1.25, z_max = 1.25;
+    double restitution = 0.7;
 
 
     if (particles[idx].position.x < x_min) {

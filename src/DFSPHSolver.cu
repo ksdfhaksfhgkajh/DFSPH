@@ -12,12 +12,10 @@ DFSPHSolver::DFSPHSolver(int particle_num, int  region_length)
         Particle particle;
         particle.position = { dis(gen), dis(gen), dis(gen) };
         particle.velocity = { 0.0, 0.0, 0.0 };
-        particle.acceleration = { 0.0, 0.0, 0.0 };
 
         _particles.emplace_back(particle);
-
-        _neighbor_grid = std::make_unique<NeighborSearch>(_particles, _radius);
     }
+    _density_error_threshold = 0.01 * _density0;
 }
 
 DFSPHSolver::DFSPHSolver(const char* input_path, const char* output_path)
@@ -69,75 +67,17 @@ DFSPHSolver::DFSPHSolver(const char* input_path, const char* output_path)
         Particle particle;
         particle.position = { x, y, z };
         particle.velocity = { 0.0, 0.0, 0.0 };
-        particle.acceleration = { 0.0, 0.0, 0.0 };
         _particles.emplace_back(particle);
     }
 
     infile.close();
     std::cout << "Loaded " << _particles.size() << " particles from " << input_path << ".\n";
+
+    _density_error_threshold = 0.01 * _density0;
 }
 
 DFSPHSolver::DFSPHSolver(const char* file_path)
     :DFSPHSolver(file_path, "../") {}
-
-void DFSPHSolver::no_pressure_predict()
-{
-    int num_particles = static_cast<int>(_particles.size());
-    int threadsPerBlock = 256;
-    int blocksPerGrid = (num_particles + threadsPerBlock - 1) / threadsPerBlock;
-
-    no_pressure_predict_kernel <<< blocksPerGrid, threadsPerBlock >>>(d_particles,
-                                                                      d_neighbor_indices,
-                                                                      d_neighbor_counts,
-                                                                      num_particles,
-                                                                      _timestep,
-                                                                      _viscosity,
-                                                                      _stiffness,
-                                                                      _particle_mass,
-                                                                      _density0,
-                                                                      _gravity,
-                                                                      _radius,
-                                                                      _max_neighbors);
-    cudaDeviceSynchronize();
-}
-
-void DFSPHSolver::export_to_ply(const std::string& filename) const
-{
-    std::ofstream ofs(filename);
-    if (!ofs.is_open()) 
-    {
-        throw std::runtime_error("Failed to open file: " + filename);
-    }
-
-    std::cout << "generating " << filename << std::endl;
-
-    ofs << "ply\n";
-    ofs << "format ascii 1.0\n";
-    ofs << "element vertex " << _particles.size() << "\n";
-    ofs << "property float x\n";
-    ofs << "property float y\n";
-    ofs << "property float z\n";
-    ofs << "end_header\n";
-
-    for (const auto& particle : _particles) 
-    {
-        ofs 
-            << particle.position.x << " "
-            << particle.position.y << " "
-            << particle.position.z << "\n";
-    }
-
-    ofs.close();
-}
-
-void DFSPHSolver::apply_boundary_conditions()
-{
-    int num_particles = static_cast<int>(_particles.size());
-    int threadsPerBlock = 256;
-    int blocksPerGrid = (num_particles + threadsPerBlock - 1) / threadsPerBlock;
-    apply_boundary_conditions_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_particles);
-    cudaDeviceSynchronize();
-}
 
 void DFSPHSolver::allocate_device_memory()
 {
@@ -175,7 +115,6 @@ void DFSPHSolver::allocate_device_memory()
     delete[] h_neighbor_indices;
     delete[] h_neighbor_counts;
 }
-
 
 void DFSPHSolver::copy_data_to_device()
 {
@@ -218,25 +157,125 @@ void DFSPHSolver::compute_density()
     cudaDeviceSynchronize();
 }
 
+void DFSPHSolver::no_pressure_predict()
+{
+    int num_particles = static_cast<int>(_particles.size());
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (num_particles + threadsPerBlock - 1) / threadsPerBlock;
+
+    no_pressure_predict_kernel <<< blocksPerGrid, threadsPerBlock >>>(d_particles,
+                                                                      d_neighbor_indices,
+                                                                      d_neighbor_counts,
+                                                                      num_particles,
+                                                                      _timestep,
+                                                                      _viscosity,
+                                                                      _particle_mass,
+                                                                      _gravity,
+                                                                      _radius,
+                                                                      _max_neighbors);
+    cudaDeviceSynchronize();
+}
+
+void DFSPHSolver::adapt_velocities(Kappa_t kappa_t)
+{
+    int num_particles = static_cast<int>(_particles.size());
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (num_particles + threadsPerBlock - 1) / threadsPerBlock;
+    for (int iter = 0; iter < _vel_ajust_max_iter; ++iter)
+    {
+        compute_kappa_kernel<<< blocksPerGrid, threadsPerBlock >>>(d_particles,
+                                                                   d_neighbor_indices,
+                                                                   d_neighbor_counts,
+                                                                   num_particles,
+                                                                   _timestep,
+                                                                   _particle_mass,
+                                                                   _density0,
+                                                                   _radius,
+                                                                   _max_neighbors,
+                                                                   kappa_t);
+        cudaDeviceSynchronize();
+        adapt_velocities_kernel<<< blocksPerGrid, threadsPerBlock >>>(d_particles,
+                                                                      d_neighbor_indices,
+                                                                      d_neighbor_counts,
+                                                                      num_particles,
+                                                                      _timestep,
+                                                                      _particle_mass,
+                                                                      _radius,
+                                                                      _max_neighbors,
+                                                                      kappa_t);
+        cudaDeviceSynchronize();
+
+//        double
+//        compute_density_error_kernel<<< blocksPerGrid, threadsPerBlock >>>(d_particles,
+//                                                                           num_particles,
+//                                                                           _density0,
+//                                                     double* density_errors);
+    }
+}
+
+void DFSPHSolver::export_to_ply(const std::string& filename) const
+{
+    std::ofstream ofs(filename);
+    if (!ofs.is_open())
+    {
+        throw std::runtime_error("Failed to open file: " + filename);
+    }
+
+    std::cout << "generating " << filename << std::endl;
+
+    ofs << "ply\n";
+    ofs << "format ascii 1.0\n";
+    ofs << "element vertex " << _particles.size() << "\n";
+    ofs << "property float x\n";
+    ofs << "property float y\n";
+    ofs << "property float z\n";
+    ofs << "end_header\n";
+
+    for (const auto& particle : _particles)
+    {
+        ofs
+                << particle.position.x << " "
+                << particle.position.y << " "
+                << particle.position.z << "\n";
+    }
+
+    ofs.close();
+}
+
+void DFSPHSolver::apply_boundary_conditions()
+{
+    int num_particles = static_cast<int>(_particles.size());
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (num_particles + threadsPerBlock - 1) / threadsPerBlock;
+    apply_boundary_conditions_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_particles);
+    cudaDeviceSynchronize();
+}
+
 void DFSPHSolver::simulate()
 {
+    _neighbor_grid = std::make_unique<NeighborSearch>(_particles, _radius);
+    allocate_device_memory();
+    copy_data_to_device();
+    compute_density();
+
     for (int i = 0; i < _framenum; ++i)
     {
-        _neighbor_grid = std::make_unique<NeighborSearch>(_particles, _radius);
-
-        free_device_memory();
-        allocate_device_memory();
-        copy_data_to_device();
-
-        compute_density();
         no_pressure_predict();
+        adapt_velocities(Is_pho);
         apply_boundary_conditions();
+
         copy_data_to_host();
+        free_device_memory();
 
         std::ostringstream filename;
         filename << _output_path << "/frame_" << i + 1 << ".ply";
         export_to_ply(filename.str());
-    }
 
+        _neighbor_grid = std::make_unique<NeighborSearch>(_particles, _radius);
+        allocate_device_memory();
+        copy_data_to_device();
+        compute_density();
+        adapt_velocities(Is_vel);
+    }
     free_device_memory();
 }

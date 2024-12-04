@@ -20,8 +20,7 @@ public:
 
 	void compute_density();
 	void no_pressure_predict();
-//	void solve_divergence_free();
-//	void solve_density_constant();
+    void adapt_velocities(Kappa_t kappa_t);
 	void simulate();
 	void apply_boundary_conditions();
 
@@ -34,17 +33,18 @@ public:
 private:
 	std::vector<Particle> _particles;
 	const double _timestep{ 0.05 };
-	const int _framenum{ 100 };
-	const double _radius{ 2 };
+	const int _framenum{ 200 };
+	const double _radius{ 0.4 };
 	const double _particle_mass{ 1.0 };
-	const double _viscosity{ 0.1 };
+	const double _viscosity{ 1.0e-3 };
 	const double _density0{ 1.0 };
-	const double _stiffness{ 0.01 };
 	const Vector3D _gravity{0.0, -9.8, 0.0};
+    const int _vel_ajust_max_iter{3};
+    double _density_error_threshold{};
 	const char* _output_path = "..";
-    int _max_neighbors{0};
 
     std::unique_ptr<NeighborSearch> _neighbor_grid;
+    int _max_neighbors{0};
 
 public:
     void allocate_device_memory();
