@@ -7,7 +7,7 @@
 #define __global__
 #endif
 
-#include "DFSPHSolver.cuh"
+#include "DFSPHSolver.h"
 
 __device__ double poly6(double distance, double radius);
 
@@ -20,8 +20,17 @@ __global__ void compute_density_kernel(Particle* particles,
                                        const int* neighbor_counts,
                                        int num_particles,
                                        double particle_mass,
+                                       double density0,
                                        double radius,
                                        int max_neighbors);
+
+__global__ void compute_factor_kernel(Particle* particles,
+                                      const int* neighbor_indices,
+                                      const int* neighbor_counts,
+                                      int num_particles,
+                                      double particle_mass,
+                                      double radius,
+                                      int max_neighbors);
 
 __global__ void no_pressure_predict_kernel(Particle* particles,
                                            const int* neighbor_indices,
@@ -60,6 +69,12 @@ __global__ void compute_density_error_kernel(Particle* particles,
                                              double density0,
                                              double* density_errors);
 
-__global__ void apply_boundary_conditions_kernel(Particle* particles);
+__global__ void apply_boundary_conditions_kernel(Particle* particles,
+                                                 const int* neighbor_indices,
+                                                 const int* neighbor_counts,
+                                                 int num_particles,
+                                                 double particle_mass,
+                                                 double particle_radius,
+                                                 int max_neighbors);
 
 #endif

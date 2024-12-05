@@ -22,6 +22,10 @@ NeighborSearch::NeighborSearch(const std::vector<Particle>& particles, double gr
 
     for (int i = 0; i < particles.size(); ++i)
     {
+        if (particles[i].type == Particle::Boundary)
+        {
+            continue;
+        }
         int self_hash_index = _compute_index(particles[i].position);
         int search_space[27]{};
         _get_hash_search_range(search_space, self_hash_index);

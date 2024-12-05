@@ -1,11 +1,13 @@
-#include "DFSPHSolver.cuh"
+#include "DFSPHSolver.h"
 #include <chrono>
 
 int main()
 {
     auto start = std::chrono::high_resolution_clock::now();
 
-    DFSPHSolver solver("../sphere.ply", "../result");
+    DFSPHSolver solver("../sphere.ply",
+                       "../bound.ply",
+                       "../result");
 	//DFSPHSolver solver(1000.0, 1000.0);
 	//solver.export_to_ply(".\\particles_1.ply");
 	solver.simulate();

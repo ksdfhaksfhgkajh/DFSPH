@@ -5,6 +5,7 @@
 !CMakeLists.txt
 !README.md
 !sphere.ply
+!bound.ply
 
 !include/
 !include/**

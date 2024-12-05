@@ -9,7 +9,9 @@ file(GLOB CU_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cu")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_executable(solver ${CPP_SOURCES} ${CU_SOURCES})
+add_executable(solver ${CPP_SOURCES} ${CU_SOURCES}
+        src/DFSPHSolver.cpp
+)
 
 set_target_properties(solver PROPERTIES
         CUDA_SEPARABLE_COMPILATION ON
