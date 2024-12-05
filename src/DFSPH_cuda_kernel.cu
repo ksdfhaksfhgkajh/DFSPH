@@ -292,7 +292,8 @@ __global__ void apply_boundary_conditions_kernel(Particle* particles,
                                                  const int* neighbor_counts,
                                                  int num_particles,
                                                  double particle_mass,
-                                                 double particle_radius,
+                                                 double boudary_particle_radius,
+                                                 double fluid_particle_radius,
                                                  int max_neighbors)
 {
     int idx = static_cast<int>(blockDim.x * blockIdx.x + threadIdx.x);
@@ -313,23 +314,34 @@ __global__ void apply_boundary_conditions_kernel(Particle* particles,
         if (j == -1) continue;
         Particle &p_j = particles[j];
 
-        if (p_j.type == Particle::Fluid)
-        {
-            continue;
-        }
 
         Vector3D r_ij = p_i.position - p_j.position;
         double distance = r_ij.length();
-
-        double min_distance = 2 * particle_radius;
+        double min_distance{0.0};
+        if (p_j.type == Particle::Boundary)
+        {
+            min_distance = fluid_particle_radius + boudary_particle_radius;
+        }
+        else if (p_j.type == Particle::Fluid)
+        {
+            min_distance = 2 * fluid_particle_radius;
+        }
         if (distance < min_distance && distance > DFSPHSolver::epsilon)
         {
             Vector3D direction = r_ij / distance;
             double penetration_depth = min_distance - distance;
-            p_i.position += direction * penetration_depth;
 
+            double restitution{ 0.0 };    // Coefficient of restitution
             // Adjust velocities
-            double restitution = 0.6; // Coefficient of restitution
+            if (p_j.type == Particle::Boundary)
+            {
+                restitution = 0.7;
+            }
+            else if (p_j.type == Particle::Fluid)
+            {
+                restitution = 0.9;
+            }
+
             double vn = p_i.velocity.dot(direction);
 
             if (vn < 0.0)
@@ -339,6 +351,9 @@ __global__ void apply_boundary_conditions_kernel(Particle* particles,
 
                 p_i.velocity += impulse_vector / particle_mass;
             }
+
+
+            p_i.position += direction * penetration_depth;
         }
     }
 }

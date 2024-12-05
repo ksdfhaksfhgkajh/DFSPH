@@ -149,7 +149,8 @@ void DFSPHSolver::apply_boundary_conditions()
                                                                     d_neighbor_counts,
                                                                     static_cast<int>(_particle_num),
                                                                     _particle_mass,
-                                                                    _particle_radius,
+                                                                    _boundary_particle_radius,
+                                                                    _fluid_particle_radius,
                                                                     _max_neighbors);
     cudaDeviceSynchronize();
 }

@@ -74,7 +74,8 @@ __global__ void apply_boundary_conditions_kernel(Particle* particles,
                                                  const int* neighbor_counts,
                                                  int num_particles,
                                                  double particle_mass,
-                                                 double particle_radius,
+                                                 double boudary_particle_radius,
+                                                 double fluid_particle_rdius,
                                                  int max_neighbors);
 
 #endif

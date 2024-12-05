@@ -39,11 +39,12 @@ private:
 	const int _framenum{ 500 };
 	const double _radius{ 0.4 };
 	const double _particle_mass{ 1.0 };
-    const double _particle_radius{ 0.05 };
+    const double _boundary_particle_radius{ 0.1 };
+    const double _fluid_particle_radius{ 0.005 };
 	const double _viscosity{ 8.0e-2 };
 	const double _density0{ 400.0 };
 	const Vector3D _gravity{0.0, -9.8, 0.0};
-    const int _vel_ajust_max_iter{ 5 };
+    const int _vel_ajust_max_iter{ 4 };
     double _density_error_threshold{ 0.01 * _density0 };
 	const char* _output_path = "..";
 
