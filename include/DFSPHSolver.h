@@ -36,13 +36,14 @@ private:
     size_t _fluid_particle_num{};
 
 	const double _timestep{ 0.005 };
-	const int _framenum{ 500 };
-	const double _radius{ 0.4 };
-	const double _particle_mass{ 1.0 };
-    const double _boundary_particle_radius{ 0.1 };
-    const double _fluid_particle_radius{ 0.005 };
-	const double _viscosity{ 8.0e-2 };
-	const double _density0{ 400.0 };
+	const int _framenum{ 2000 };
+    const int _output_interval{ 2 };
+	const double _radius{ 0.3 };
+	const double _particle_mass{ 0.7 };
+    const double _boundary_particle_radius{ 0.15 };
+    const double _fluid_particle_radius{ 0.015 };
+	const double _viscosity{ 1.0e-2 };
+    const double _density0{ 1000.0 };
 	const Vector3D _gravity{0.0, -9.8, 0.0};
     const int _vel_ajust_max_iter{ 4 };
     double _density_error_threshold{ 0.01 * _density0 };

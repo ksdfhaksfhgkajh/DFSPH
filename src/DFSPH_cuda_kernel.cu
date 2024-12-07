@@ -317,7 +317,7 @@ __global__ void apply_boundary_conditions_kernel(Particle* particles,
 
         Vector3D r_ij = p_i.position - p_j.position;
         double distance = r_ij.length();
-        double min_distance{0.0};
+        double min_distance{ 0.0 };
         if (p_j.type == Particle::Boundary)
         {
             min_distance = fluid_particle_radius + boudary_particle_radius;
@@ -331,19 +331,20 @@ __global__ void apply_boundary_conditions_kernel(Particle* particles,
             Vector3D direction = r_ij / distance;
             double penetration_depth = min_distance - distance;
 
-            double restitution{ 0.0 };    // Coefficient of restitution
-            // Adjust velocities
             if (p_j.type == Particle::Boundary)
             {
-                restitution = 0.7;
+                p_i.position += direction * penetration_depth;
             }
             else if (p_j.type == Particle::Fluid)
             {
-                restitution = 0.9;
+                p_i.position.y += 0.5 * fluid_particle_radius;
+                p_j.position.y -= 0.5 * fluid_particle_radius;
+                continue;
             }
 
+            double restitution{ 0.5 };    // Coefficient of restitution
+            // Adjust velocities
             double vn = p_i.velocity.dot(direction);
-
             if (vn < 0.0)
             {
                 double impulse = -(1.0 + restitution) * vn / (1.0 / particle_mass);
@@ -351,9 +352,6 @@ __global__ void apply_boundary_conditions_kernel(Particle* particles,
 
                 p_i.velocity += impulse_vector / particle_mass;
             }
-
-
-            p_i.position += direction * penetration_depth;
         }
     }
 }

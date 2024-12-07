@@ -120,11 +120,12 @@ void DFSPHSolver::simulate()
 
         copy_data_to_host();
         free_device_memory();
-
-        std::ostringstream filename;
-        filename << _output_path << "/frame_" << i + 1 << ".ply";
-        export_to_ply(filename.str());
-
+        if ( i % _output_interval == 0 )
+        {
+            std::ostringstream filename;
+            filename << _output_path << "/frame_" << i / _output_interval + 1 << ".ply";
+            export_to_ply(filename.str());
+        }
         _neighbor_grid = std::make_unique<NeighborSearch>(_particles, _radius);
         allocate_device_memory();
         copy_data_to_device();
