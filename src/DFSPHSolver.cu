@@ -130,12 +130,6 @@ void DFSPHSolver::adapt_velocities(Kappa_t kappa_t)
                                                                       _max_neighbors,
                                                                       kappa_t);
         cudaDeviceSynchronize();
-
-//        double
-//        compute_density_error_kernel<<< blocksPerGrid, threadsPerBlock >>>(d_particles,
-//                                                                           num_particles,
-//                                                                           _density0,
-//                                                     double* density_errors);
     }
 }
 

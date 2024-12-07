@@ -64,11 +64,6 @@ __global__ void adapt_velocities_kernel(Particle* particles,
                                         int max_neighbors,
                                         Kappa_t kappa_t);
 
-__global__ void compute_density_error_kernel(Particle* particles,
-                                             int num_particles,
-                                             double density0,
-                                             double* density_errors);
-
 __global__ void apply_boundary_conditions_kernel(Particle* particles,
                                                  const int* neighbor_indices,
                                                  const int* neighbor_counts,

@@ -30,9 +30,8 @@ __device__ Vector3D spiky_first_derivative(const Vector3D& diff, double radius)
     }
     else
     {
-        Vector3D kernel = 1.0 - (diff / radius);
-        return (diff * (- 45.0 / (DFSPHSolver::PI * pow(radius, 4) * distance)))
-               * (kernel.dot(kernel)) ;
+        double coef = - 45.0 / (DFSPHSolver::PI * pow(radius, 6));
+        return (diff / distance) * coef * pow(radius-distance,2);
     }
 }
 
@@ -273,20 +272,6 @@ __global__ void adapt_velocities_kernel(Particle* particles,
     }
 }
 
-__global__ void compute_density_error_kernel(Particle* particles,
-                                             int num_particles,
-                                             double density0,
-                                             double* density_errors)
-{
-    int idx = static_cast<int>(blockDim.x * blockIdx.x + threadIdx.x);
-    if (idx >= num_particles) return;
-
-    Particle& p_i = particles[idx];
-
-    double densityError = p_i.density - density0;
-    density_errors[idx] = fabs(densityError);
-}
-
 __global__ void apply_boundary_conditions_kernel(Particle* particles,
                                                  const int* neighbor_indices,
                                                  const int* neighbor_counts,
@@ -314,33 +299,21 @@ __global__ void apply_boundary_conditions_kernel(Particle* particles,
         if (j == -1) continue;
         Particle &p_j = particles[j];
 
+        if (p_j.type == Particle::Fluid)
+        {
+            continue;
+        }
 
         Vector3D r_ij = p_i.position - p_j.position;
         double distance = r_ij.length();
-        double min_distance{ 0.0 };
-        if (p_j.type == Particle::Boundary)
-        {
-            min_distance = fluid_particle_radius + boudary_particle_radius;
-        }
-        else if (p_j.type == Particle::Fluid)
-        {
-            min_distance = 2 * fluid_particle_radius;
-        }
+        double min_distance = fluid_particle_radius + boudary_particle_radius;
+
         if (distance < min_distance && distance > DFSPHSolver::epsilon)
         {
             Vector3D direction = r_ij / distance;
             double penetration_depth = min_distance - distance;
 
-            if (p_j.type == Particle::Boundary)
-            {
-                p_i.position += direction * penetration_depth;
-            }
-            else if (p_j.type == Particle::Fluid)
-            {
-                p_i.position.y += 0.5 * fluid_particle_radius;
-                p_j.position.y -= 0.5 * fluid_particle_radius;
-                continue;
-            }
+            p_i.position += direction * penetration_depth;
 
             double restitution{ 0.5 };    // Coefficient of restitution
             // Adjust velocities
@@ -355,41 +328,3 @@ __global__ void apply_boundary_conditions_kernel(Particle* particles,
         }
     }
 }
-
-//__global__ void apply_boundary_conditions_kernel(Particle* particles)
-//{
-//    size_t idx = blockDim.x * blockIdx.x + threadIdx.x;
-//
-//    double x_min = -1.25, x_max = 1.25;
-//    double y_min = -2.0, y_max = 5.0;
-//    double z_min = -1.25, z_max = 1.25;
-//    double restitution = 0.7;
-//
-//
-//    if (particles[idx].position.x < x_min) {
-//        particles[idx].position.x = x_min;
-//        particles[idx].velocity.x *= -restitution;
-//    }
-//    if (particles[idx].position.x > x_max) {
-//        particles[idx].position.x = x_max;
-//        particles[idx].velocity.x *= -restitution;
-//    }
-//
-//    if (particles[idx].position.y < y_min) {
-//        particles[idx].position.y = y_min;
-//        particles[idx].velocity.y *= -restitution;
-//    }
-//    if (particles[idx].position.y > y_max) {
-//        particles[idx].position.y = y_max;
-//        particles[idx].velocity.y *= -restitution;
-//    }
-//
-//    if (particles[idx].position.z < z_min) {
-//        particles[idx].position.z = z_min;
-//        particles[idx].velocity.z *= -restitution;
-//    }
-//    if (particles[idx].position.z > z_max) {
-//        particles[idx].position.z = z_max;
-//        particles[idx].velocity.z *= -restitution;
-//    }
-//}
