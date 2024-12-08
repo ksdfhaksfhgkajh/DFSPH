@@ -6,11 +6,11 @@
 !README.md
 
 !example.png
+!particles/
+!particles/bound.ply
+!particles/sphere.ply
 
 !include/
 !include/**
 !src/
 !src/**
-!/particles
-!/particles/sphere.ply
-!/particles/bound.ply
