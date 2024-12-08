@@ -1,2 +1,16 @@
-test.cpp中更改初始.ply文件和输出路径，构造函数第一项为流体文件路径，第二个参数为结果输出路径。
-目前只支持点云模拟，参数在DFSPHSolver.h里的私有成员变量，还没写接口。
+In `test.cpp`, modify the initial `.ply` file and the output path. The first argument of the constructor is the path to the fluid file, and the second argument is the path for result output.
+
+Currently, only point cloud simulation is supported. The parameters are stored in the private member variables of `DFSPHSolver.h`, and the interface has not been implemented yet.
+
+The project requirements include **CMake** and a properly installed version of **CUDA**.
+
+run:
+```bash
+mkdir build
+cd build
+
+cmake ../
+```
+Alternatively, Use **CLion** to handle the build process.
+
+![example_pic](example.png)

@@ -35,19 +35,19 @@ private:
     size_t _particle_num{};
     size_t _fluid_particle_num{};
 
-	const double _timestep{ 0.001 };
-	const int _framenum{ 5000 };
+    const double _timestep{ 0.001 };
+    const int _framenum{ 5000 };
     const int _output_interval{ 5 };
-	const double _radius{ 0.2 };
-	const double _particle_mass{ 1.0 };
+    const double _radius{ 0.2 };
+    const double _particle_mass{ 1.0 };
     const double _boundary_particle_radius{ 0.2 };
     const double _fluid_particle_radius{ 0.02 };
-	const double _viscosity{ 1.0e-2 };
+    const double _viscosity{ 1.0e-2 };
     const double _density0{ 1075.0 };
-	const Vector3D _gravity{0.0, -9.8, 0.0};
+    const Vector3D _gravity{0.0, -9.8, 0.0};
     const int _vel_ajust_max_iter{ 3 };
     double _density_error_threshold{ 0.01 * _density0 };
-	const char* _output_path = "..";
+    const char* _output_path = "..";
 
     std::unique_ptr<NeighborSearch> _neighbor_grid;
     int _max_neighbors{};

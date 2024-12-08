@@ -7,23 +7,26 @@
 #include <cmath>
 #include <array>
 
-struct CellCoord {
+struct CellCoord
+{
     int ix;
     int iy;
     int iz;
 
-    bool operator==(const CellCoord &other) const {
+    bool operator==(const CellCoord &other) const
+    {
         return ix == other.ix && iy == other.iy && iz == other.iz;
     }
 };
 
-struct CellCoordHash {
-    std::size_t operator()(const CellCoord &c) const {
-        // 简单的hash组合, 可以根据需要改进
+struct CellCoordHash
+{
+    std::size_t operator()(const CellCoord &c) const
+    {
         std::size_t h1 = std::hash<int>()(c.ix);
         std::size_t h2 = std::hash<int>()(c.iy);
         std::size_t h3 = std::hash<int>()(c.iz);
-        // 经典 hash combine 方法
+
         return h1 ^ (h2 + 0x9e3779b9 + (h1<<6) + (h1>>2)) ^
                (h3 + 0x9e3779b9 + (h2<<6) + (h2>>2));
     }
