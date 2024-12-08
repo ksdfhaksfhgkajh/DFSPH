@@ -4,11 +4,13 @@
 !.gitignore
 !CMakeLists.txt
 !README.md
-!/particles/sphere.ply
-!/particles/bound.ply
+
 !example.png
 
 !include/
 !include/**
 !src/
 !src/**
+!/particles
+!/particles/sphere.ply
+!/particles/bound.ply
