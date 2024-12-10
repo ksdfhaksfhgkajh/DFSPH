@@ -8,9 +8,24 @@ run:
 ```bash
 mkdir build
 cd build
-
 cmake ../
+make
+
+cd ../
+mkdir result
+cd bin
+./solver
 ```
+
+you can attach
+
+```bash
+set(CMAKE_CUDA_COMPILER "path_of_nvcc")
+```
+to the second line of `CMakeLists.txt` if there's an issue that **cmake** can't find the **CMAKE_CUDA_COMPILER**
+
+default **path_of_nvcc** can be `"/usr/local/cuda-x.x/bin/nvcc"` in Ubuntu, `x.x` here is your cuda version
+
 Alternatively, Use **CLion** to handle the build process.
 
 ![example_pic](example.png)
